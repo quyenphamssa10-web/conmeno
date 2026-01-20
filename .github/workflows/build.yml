@@ -1,0 +1,5 @@
+name: build apk
+jobs:
+  build:
+    runs-on: action/checout@v4
+    steps: action/steup
