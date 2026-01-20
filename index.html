@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mua Bán Táo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f8f8;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 80px;
+        }
+        
+        .balance-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            background-color: #fff;
+        }
+        
+        .balance-item {
+            background-color: #eaeaea;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        /* Trang Mua */
+        .campaigns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .campaign {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .campaign:hover {
+            transform: scale(1.03);
+        }
+        
+        .campaign:active {
+            transform: scale(0.97);
+        }
+        
+        .campaign-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .campaign-apples {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+        
+        .reset-btn {
+            width: 100%;
+            padding: 16px;
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        /* Trang Bán */
+        .create-box {
+            margin: 60px auto;
+            max-width: 90%;
+            padding: 60px 20px;
+            text-align: center;
+            border: 3px dashed #ccc;
+            border-radius: 16px;
+            font-size: 20px;
+            color: #666;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        
+        /* Bottom navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            background-color: #fff;
+            border-top: 1px solid #ddd;
+            height: 70px;
+        }
+        
+        .nav-btn {
+            flex: 1;
+            font-size: 32px;
+            background: none;
+            border: none;
+            padding: 10px;
+        }
+        
+        .nav-btn.active {
+            background-color: #e0f0ff;
+            color: #007bff;
+            font-weight: bold;
+        }
+        
+        /* Ẩn trang */
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        #modal-title {
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        #modal-message {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        #apple-input {
+            width: 80%;
+            padding: 12px;
+            font-size: 20px;
+            border-radius: 12px;
+            border: 1px solid #ccc;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #feedback-message {
+            font-size: 18px;
+            margin: 20px 0;
+            min-height: 60px;
+        }
+
+        #confirm-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 30px;
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .no-campaigns {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: #888;
+            font-size: 18px;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Modal chung -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title"></h2>
+            <p id="modal-message"></p>
+            <input type="number" id="apple-input" min="1" placeholder="Nhập số táo">
+            <div id="preview-group"></div>
+            <p id="feedback-message"></p>
+            <button id="confirm-btn">Xác nhận</button>
+        </div>
+    </div>
+
+    <!-- Trang Mua (1) -->
+    <div id="buy-page" class="page active">
+        <div class="balance-container">
+            <div class="balance-item">🪙 <span id="user-coins">0</span></div>
+            <div class="balance-item">🍎 <span id="user-apples">0</span></div>
+        </div>
+        
+        <div class="content">
+            <div class="campaigns" id="campaigns-container">
+                <!-- Chiến dịch sẽ được render bằng JS -->
+            </div>
+            
+            <button class="reset-btn" id="reset-btn">Reset chiến dịch</button>
+        </div>
+        
+        <div class="bottom-nav">
+            <button class="nav-btn active" onclick="switchPage('buy')">🍎</button>
+            <button class="nav-btn" onclick="switchPage('sell')">💰</button>
+        </div>
+    </div>
+
+    <!-- Trang Bán (2) -->
+    <div id="sell-page" class="page">
+        <div class="balance-container">
+            <div class="balance-item">🪙 <span id="user-coins-sell">0</span></div>
+            <div class="balance-item">🍎 <span id="user-apples-sell">0</span></div>
+        </div>
+        
+        <div class="content">
+            <div class="create-box" id="create-box">
+                Bấm vào đây để tạo chiến dịch
+            </div>
+        </div>
+        
+        <div class="bottom-nav">
+            <button class="nav-btn" onclick="switchPage('buy')">🍎</button>
+            <button class="nav-btn active" onclick="switchPage('sell')">💰</button>
+        </div>
+    </div>
+
+    <script>
+        // Dữ liệu
+        let user = { coins: 1234, apples: 567 };
+        let campaigns = []; // Chỉ chứa chiến dịch còn hàng (>0 táo)
+        let currentCampaign = null; // Null = chế độ bán, có giá trị = chế độ mua
+        const RATE_COIN_PER_APPLE = 10; // Mỗi táo bán nhận 10 coin
+
+        let previewApples, previewCoin; // Sẽ được gán lại sau mỗi lần mở modal
+
+        // Load dữ liệu từ localStorage
+        window.onload = function() {
+            const saved = localStorage.getItem('appleAppData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                user = data.user;
+                campaigns = data.campaigns || [];
+            }
+            updateBalance();
+            displayRandomCampaigns();
+        };
+
+        // Lưu dữ liệu
+        function saveData() {
+            // Làm sạch chiến dịch hết hàng
+            campaigns = campaigns.filter(c => c.apples > 0);
+            localStorage.setItem('appleAppData', JSON.stringify({ user, campaigns }));
+        }
+
+        // Cập nhật hiển thị coin và táo
+        function updateBalance() {
+            document.getElementById('user-coins').textContent = user.coins;
+            document.getElementById('user-apples').textContent = user.apples;
+            document.getElementById('user-coins-sell').textContent = user.coins;
+            document.getElementById('user-apples-sell').textContent = user.apples;
+        }
+
+        // Hiển thị ngẫu nhiên 4 chiến dịch còn hàng
+        function displayRandomCampaigns() {
+            const available = campaigns.filter(c => c.apples > 0);
+            let selected = [];
+            if (available.length > 0) {
+                let temp = [...available];
+                for (let i = 0; i < 4 && temp.length > 0; i++) {
+                    const idx = Math.floor(Math.random() * temp.length);
+                    selected.push(temp.splice(idx, 1)[0]);
+                }
+            }
+
+            const container = document.getElementById('campaigns-container');
+            container.innerHTML = '';
+
+            if (selected.length === 0) {
+                container.innerHTML = '<div class="no-campaigns">Không có chiến dịch nào đang đề xuất.<br>Hãy sang trang bán để tạo mới!</div>';
+                return;
+            }
+
+            selected.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'campaign';
+                div.innerHTML = `
+                    <div class="campaign-title">Bán táo</div>
+                    <div class="campaign-apples">${c.apples} 🍎</div>
+                    <div>Giá: ${c.price} 🪙/quả</div>
+                    <div style="color:green; margin-top:8px;">Còn hàng</div>
+                `;
+                div.onclick = () => openBuyModal(c);
+                container.appendChild(div);
+            });
+
+            // Placeholder nếu ít hơn 4
+            for (let i = selected.length; i < 4; i++) {
+                const div = document.createElement('div');
+                div.className = 'campaign';
+                div.style.opacity = '0.4';
+                div.innerHTML = '<div>Không có chiến dịch</div>';
+                container.appendChild(div);
+            }
+        }
+
+        // Modal functions
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const appleInput = document.getElementById('apple-input');
+        const previewGroup = document.getElementById('preview-group');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const confirmBtn = document.getElementById('confirm-btn');
+
+        function closeModal() {
+            modal.style.display = 'none';
+            currentCampaign = null;
+        }
+
+        function openCreateModal() {
+            currentCampaign = null;
+            modalTitle.textContent = 'Nhập số táo bạn muốn bán';
+            modalMessage.textContent = 'Bạn sẽ nhận ngay coin tương ứng khi tạo chiến dịch.';
+            appleInput.placeholder = 'Nhập số táo bạn muốn bán';
+            appleInput.value = '';
+            appleInput.removeAttribute('max');
+
+            previewGroup.innerHTML = `
+                <div style="text-align:center; margin:15px 0; font-size:16px;">
+                    Tỷ giá bán: ${RATE_COIN_PER_APPLE} 🪙/quả
+                </div>
+                <div class="balance-item" style="justify-content:center; margin:10px auto;">
+                    🍎 - <span id="preview-apples">0</span>
+                </div>
+                <div class="balance-item" style="justify-content:center; margin:10px auto;">
+                    🪙 + <span id="preview-coin">0</span>
+                </div>
+            `;
+
+            previewApples = document.getElementById('preview-apples');
+            previewCoin = document.getElementById('preview-coin');
+
+            // === RESET HIỂN THỊ KHI MỞ MODAL BÁN ===
+            appleInput.style.display = 'block';
+            previewGroup.style.display = 'block';
+            feedbackMessage.style.display = 'none';
+
+            modal.style.display = 'flex';
+        }
+
+        function openBuyModal(camp) {
+            currentCampaign = camp;
+            modalTitle.textContent = 'Thông báo';
+            modalMessage.textContent = 'Hãy nhập số táo bạn muốn mua';
+            appleInput.placeholder = 'Hôm nay bạn muốn mua bao nhiêu táo?';
+            appleInput.value = '';
+            appleInput.max = camp.apples;
+
+            previewGroup.innerHTML = `
+                <div style="text-align:center; margin:15px 0; font-size:16px; color:#333;">
+                    Giá: ${camp.price} 🪙/quả<br>
+                    Còn lại: ${camp.apples} 🍎
+                </div>
+                <div class="balance-item" style="justify-content:center; margin:10px auto;">
+                    🍎 + <span id="preview-apples">0</span>
+                </div>
+                <div class="balance-item" style="justify-content:center; margin:10px auto;">
+                    🪙 - <span id="preview-coin">0</span>
+                </div>
+            `;
+
+            previewApples = document.getElementById('preview-apples');
+            previewCoin = document.getElementById('preview-coin');
+
+            // === RESET HIỂN THỊ KHI MỞ MODAL MUA ===
+            appleInput.style.display = 'block';
+            previewGroup.style.display = 'block';
+            feedbackMessage.style.display = 'none';
+
+            modal.style.display = 'flex';
+        }
+
+        function openFeedback(title, message) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = '';
+            appleInput.style.display = 'none';
+            previewGroup.style.display = 'none';
+            feedbackMessage.style.display = 'block';
+            feedbackMessage.innerHTML = message;
+            modal.style.display = 'flex';
+        }
+
+        // Đóng modal khi bấm ngoài
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // Preview realtime khi nhập
+        appleInput.addEventListener('input', () => {
+            let val = parseInt(appleInput.value) || 0;
+            if (val < 0) val = 0;
+
+            if (currentCampaign) { // Chế độ mua
+                if (val > currentCampaign.apples) {
+                    val = currentCampaign.apples;
+                    appleInput.value = val;
+                }
+                previewApples.textContent = val;
+                previewCoin.textContent = val * currentCampaign.price;
+            } else { // Chế độ bán
+                previewApples.textContent = val;
+                previewCoin.textContent = val * RATE_COIN_PER_APPLE;
+            }
+        });
+
+        // Xử lý nút xác nhận
+        confirmBtn.onclick = () => {
+            const val = parseInt(appleInput.value) || 0;
+
+            if (currentCampaign) { // ================== CHẾ ĐỘ MUA ==================
+                if (val <= 0 || val > currentCampaign.apples) {
+                    openFeedback('Thông báo', `Chiến dịch chỉ còn ${currentCampaign.apples} 🍎.<br>Bạn chỉ có thể mua tối đa ${currentCampaign.apples} táo!`);
+                    return;
+                }
+
+                const cost = val * currentCampaign.price;
+
+                if (user.coins < cost) {
+                    const thieu = cost - user.coins;
+                    openFeedback('Phản hồi', `Bạn còn thiếu ${thieu} 🪙 nữa để mua ${val} 🍎.<br>Nếu tài chính không ổn thì hãy mua với mức giá hời hơn nhá!`);
+                    return;
+                }
+
+                // Thành công mua
+                user.coins -= cost;
+                user.apples += val;
+                currentCampaign.apples -= val;
+
+                saveData();
+                updateBalance();
+                displayRandomCampaigns();
+                closeModal();
+
+                openFeedback('Phản hồi', `Bạn đã mua được ${val} 🍎 với giá ${cost} 🪙!`);
+
+            } else { // ================== CHẾ ĐỘ BÁN ==================
+                if (val <= 0) {
+                    openFeedback('Thông báo', 'Vui lòng nhập số táo lớn hơn 0!');
+                    return;
+                }
+
+                if (user.apples < val) {
+                    const thieu = val - user.apples;
+                    openFeedback('Thông báo', `Số táo của bạn hiện tại còn thiếu ${thieu} 🍎.<br>Hãy kiếm thêm táo để bán nhé!`);
+                    return;
+                }
+
+                // Thành công bán
+                user.apples -= val;
+                const receivedCoin = val * RATE_COIN_PER_APPLE;
+                user.coins += receivedCoin;
+
+                const newPrice = Math.floor(Math.random() * 11) + 5; // 5-15 coin/quả
+                const newCampaign = {
+                    title: 'Bán táo',
+                    apples: val,
+                    price: newPrice
+                };
+                campaigns.push(newCampaign);
+
+                saveData();
+                updateBalance();
+                closeModal();
+
+                openFeedback('Phản hồi', `Bạn đã bán thành công ${val} 🍎 và nhận ${receivedCoin} 🪙!`);
+
+                // Nếu đang ở trang mua thì refresh chiến dịch
+                if (document.getElementById('buy-page').classList.contains('active')) {
+                    displayRandomCampaigns();
+                }
+            }
+        };
+
+        // Sự kiện bấm tạo chiến dịch
+        document.getElementById('create-box').onclick = openCreateModal;
+
+        // Sự kiện reset chiến dịch
+        document.getElementById('reset-btn').onclick = displayRandomCampaigns;
+
+        // Chuyển trang
+        function switchPage(page) {
+            document.getElementById('buy-page').classList.remove('active');
+            document.getElementById('sell-page').classList.remove('active');
+            
+            if (page === 'buy') {
+                document.getElementById('buy-page').classList.add('active');
+                displayRandomCampaigns();
+            } else {
+                document.getElementById('sell-page').classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
